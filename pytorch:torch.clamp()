@@ -1,0 +1,68 @@
+https://blog.csdn.net/u013230189/article/details/82627375
+pytorch:torch.clamp()
+
+大雄没有叮当猫 2018-09-11 16:02:43  59990  收藏 50
+分类专栏： pytorch 深度学习 机器学习
+版权
+torch.clamp(input, min, max, out=None) → Tensor
+将输入input张量每个元素的夹紧到区间 [min,max][min,max]，并返回结果到一个新张量。
+
+操作定义如下：
+
+      | min, if x_i < min
+y_i = | x_i, if min <= x_i <= max
+      | max, if x_i > max
+如果输入是FloatTensor or DoubleTensor类型，则参数min max 必须为实数，否则须为整数。【译注：似乎并非如此，无关输入类型，min， max取整数、实数皆可。】
+
+参数：
+
+input (Tensor) – 输入张量
+min (Number) – 限制范围下限
+max (Number) – 限制范围上限
+out (Tensor, optional) – 输出张量
+代码示例如下:
+
+a=torch.randint(low=0,high=10,size=(10,1))
+print(a)
+a=torch.clamp(a,3,9)
+print(a)
+ 输出如下:
+
+tensor([[9.],
+        [3.],
+        [0.],
+        [4.],
+        [4.],
+        [2.],
+        [4.],
+        [1.],
+        [2.],
+        [9.]])
+tensor([[9.],
+        [3.],
+        [3.],
+        [4.],
+        [4.],
+        [3.],
+        [4.],
+        [3.],
+        [3.],
+        [9.]])
+
+点赞
+18
+
+评论
+4
+
+分享
+
+收藏
+50
+
+手机看
+
+打赏
+
+关注
+一键三连
