@@ -1,0 +1,38 @@
+https://blog.csdn.net/qq_38410428/article/details/101102075
+用PyTorch进行训练和测试时一定注意要把实例化的model指定train/eval，eval（）时，框架会自动把BN和DropOut固定住，不会取平均，而是用训练好的值，不然的话，一旦test的batch_size过小，很容易就会被BN层导致生成图片颜色失真极大！！！！！！
+
+Class Inpaint_Network()
+ ......
+
+Model = Inpaint_Nerwoek()
+ 
+#train:
+
+Model.train(mode=True)
+
+.....
+
+#test:
+
+Model.eval()
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+model.train()
+启用 BatchNormalization 和 Dropout
+model.eval()
+不启用 BatchNormalization 和 Dropout
+训练完train样本后，生成的模型model要用来测试样本。在model(test)之前，需要加上model.eval()，否则的话，有输入数据，即使不训练，它也会改变权值。这是model中含有batch normalization层所带来的的性质。
+
+在做one classification的时候，训练集和测试集的样本分布是不一样的，尤其需要注意这一点。
