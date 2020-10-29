@@ -1,0 +1,38 @@
+https://blog.csdn.net/missyoudaisy/article/details/104908231
+[一起学习pytorch吧]之torch.sign函数
+
+missyoudaisy 2020-03-16 21:12:48  1471  收藏 1
+文章标签： python
+版权
+Hello，大家好！今天为大家讲解以下pytorch的sign函数。
+
+torch.sign(input, out=None) → Tensor
+该函数的作用就是输出input通过sign函数后的张量，其中sign函数就是符号函数，如下图所示。
+
+
+
+例子：
+
+>>> a = torch.tensor([0.7, -1.2, 0., 2.3])
+>>> a
+tensor([ 0.7000, -1.2000,  0.0000,  2.3000])
+>>> torch.sign(a)
+tensor([ 1., -1.,  0.,  1.])
+ 
+
+
+点赞
+
+评论
+
+分享
+
+收藏
+1
+
+手机看
+
+打赏
+
+关注
+一键三连
