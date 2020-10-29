@@ -1,0 +1,30 @@
+https://www.cnblogs.com/kevin-red-heart/p/11340944.html
+1. 所有的tensor都有.requires_grad属性,可以设置这个属性.
+
+　　　　x = tensor.ones(2,4,requires_grad=True)
+
+2.如果想改变这个属性，就调用tensor.requires_grad_()方法：
+
+　　 x.requires_grad_(False)
+
+3.自动求导注意点:
+
+　　(1)  要想使x支持求导，必须让x为浮点类型;
+
+　　(2) 求导，只能是【标量】对标量，或者【标量】对向量/矩阵求导;
+
+　　(3) 不是标量也可以用backward()函数来求导;
+
+　　(4) 　一般来说，我是对标量求导，比如在神经网络里面，我们的loss会是一个标量，那么我们让loss对神经网络的参数w求导，直接通过loss.backward()即可。
+
+　　　　　　但是，有时候我们可能会有多个输出值，比如loss=[loss1,loss2,loss3]，那么我们可以让loss的各个分量分别对x求导，这个时候就采用：
+　　　　　　　　loss.backward(torch.tensor([[1.0,1.0,1.0,1.0]]))
+
+　　　　　　如果你想让不同的分量有不同的权重，那么就赋予gradients不一样的值即可，比如：
+　　　　　　　　　　loss.backward(torch.tensor([[0.1,1.0,10.0,0.001]]))
+
+　　　　　　这样，我们使用起来就更加灵活了，虽然也许多数时候，我们都是直接使用.backward()就完事儿了。
+
+　　(5)一个计算图只能backward一次,改善方法:retain_graph=True
+
+　　　　但是这样会吃内存！，尤其是，你在大量迭代进行参数更新的时候，很快就会内存不足，memory out了。
