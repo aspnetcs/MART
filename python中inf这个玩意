@@ -1,0 +1,59 @@
+https://blog.csdn.net/jeremyjone/article/details/80503488
+python中inf这个玩意
+
+小鹰丶 2018-05-29 23:06:50  33294  收藏 15
+分类专栏： Python 算法 文章标签： python 算法 inf
+版权
+今天再看算法时，看到了float("inf")的语句，眼前一亮，毕竟是初学，很多新鲜玩意，于是麻溜查查。
+
+
+
+Python中可以用如下方式表示正负无穷：
+float("inf"), float("-inf")
+利用 inf 做简单加、乘算术运算仍会得到 inf
+>>> 1 + float('inf')
+inf
+>>> 2 * float('inf')
+inf
+但是利用 inf 乘以0会得到 not-a-number(NaN)：
+>>> 0 * float("inf")
+nan
+除了inf外的其他数除以inf，会得到0
+>>> 889 / float('inf')
+0.0
+>>> float('inf')/float('inf')
+nan
+不等式： 当涉及 > 和 < 运算时， 所有数都比-inf大  所有数都比+inf小 等式： +inf 和 +inf相等 -inf 和 -inf相等
+
+
+好吧，概念有了，再来看我看到的题目，算列表中差值最小的两个数，可以用两层for循环，得到O(n*n)的复杂度，如果要优化，可以考虑O(n)的一次遍历算法：
+
+'''
+@ date: 2018-5-29
+@ author: jeremyjone
+@ 关于inf的使用
+'''
+from random import randrange
+ 
+ 
+def func(lst):
+    lst.sort()
+    dd = float("inf")  # 无穷大
+    for i in range(len(lst) - 1):
+        x, y = lst[i], lst[i + 1]
+        if x == y:
+            continue
+        d = abs(x - y)
+        if d < dd:  # 开始所有数都会比dd小，所以这里第一次肯定执行
+            xx, yy, dd = x, y, d  # 第一次执行时dd这个无穷大的值会变成(x - y)的绝对值d，相当于给dd这个条件值赋一个初始值
+    return xx, yy
+ 
+ 
+if __name__ == '__main__':
+    l1 = [randrange(10 ** 10) for i in range(100)]
+    print(func(l1))
+利用Python的排序，就可以简化遍历次数，一次遍历得到结果，接下来就是使用inf这个值
+
+inf这个无穷大的值的好处在于传入的列表参数可能会很大，在不知道的情况下，如何给定初值，有了inf这个值，第一次执行上面代码中的 if d < dd:  语句时，无论d的值有多大，都一定会执行，将第一次得到的d值赋给dd，然后再次判断时就有了真正的比较值。
+
+真心python让变成更美好啊~
