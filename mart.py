@@ -13,6 +13,7 @@ def mart_loss(model,
               perturb_steps=10,
               beta=6.0,
               distance='l_inf'):
+    #k-l散度
     kl = nn.KLDivLoss(reduction='none')
     model.eval()
     batch_size = len(x_natural)
