@@ -1,0 +1,125 @@
+https://blog.csdn.net/weixin_44134757/article/details/105775027
+pytorch中with torch.no_grad():
+
+这是一只小菜鸡 2020-04-26 19:19:22  5311  收藏 16
+文章标签： python 人工智能 深度学习
+版权
+1.关于with
+with是python中上下文管理器，简单理解，当要进行固定的进入，返回操作时，可以将对应需要的操作，放在with所需要的语句中。比如文件的写入（需要打开关闭文件）等。
+
+以下为一个文件写入使用with的例子。
+
+        with open (filename,'w') as sh:    
+            sh.write("#!/bin/bash\n")
+            sh.write("#$ -N "+'IC'+altas+str(patientNumber)+altas+'\n')
+            sh.write("#$ -o "+pathSh+altas+'log.log\n') 
+            sh.write("#$ -e "+pathSh+altas+'err.log\n') 
+            sh.write('source ~/.bashrc\n')          
+            sh.write('. "/home/kjsun/anaconda3/etc/profile.d/conda.sh"\n')
+            sh.write('conda activate python27\n')
+            sh.write('echo "to python"\n')
+            sh.write('echo "finish"\n')
+            sh.close()
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+with后部分，可以将with后的语句运行，将其返回结果给到as后的变量（sh），之后的代码块对close进行操作。
+
+2.关于with torch.no_grad():
+在使用pytorch时，并不是所有的操作都需要进行计算图的生成（计算过程的构建，以便梯度反向传播等操作）。而对于tensor的计算操作，默认是要进行计算图的构建的，在这种情况下，可以使用 with torch.no_grad():，强制之后的内容不进行计算图构建。
+
+以下分别为使用和不使用的情况：
+
+（1）使用with torch.no_grad():
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        outputs = net(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+print('Accuracy of the network on the 10000 test images: %d %%' % (
+    100 * correct / total))        
+print(outputs)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+运行结果：
+
+Accuracy of the network on the 10000 test images: 55 %
+tensor([[-2.9141, -3.8210,  2.1426,  3.0883,  2.6363,  2.6878,  2.8766,  0.3396,
+         -4.7505, -3.8502],
+        [-1.4012, -4.5747,  1.8557,  3.8178,  1.1430,  3.9522, -0.4563,  1.2740,
+         -3.7763, -3.3633],
+        [ 1.3090,  0.1812,  0.4852,  0.1315,  0.5297, -0.3215, -2.0045,  1.0426,
+         -3.2699, -0.5084],
+        [-0.5357, -1.9851, -0.2835, -0.3110,  2.6453,  0.7452, -1.4148,  5.6919,
+         -6.3235, -1.6220]])
+1
+2
+3
+4
+5
+6
+7
+8
+9
+此时的outputs没有 属性。
+
+（2）不使用with torch.no_grad():
+而对应的不使用的情况
+
+for data in testloader:
+    images, labels = data
+    outputs = net(images)
+    _, predicted = torch.max(outputs.data, 1)
+    total += labels.size(0)
+    correct += (predicted == labels).sum().item()
+print('Accuracy of the network on the 10000 test images: %d %%' % (
+    100 * correct / total))
+print(outputs)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+结果如下：
+
+Accuracy of the network on the 10000 test images: 55 %
+tensor([[-2.9141, -3.8210,  2.1426,  3.0883,  2.6363,  2.6878,  2.8766,  0.3396,
+         -4.7505, -3.8502],
+        [-1.4012, -4.5747,  1.8557,  3.8178,  1.1430,  3.9522, -0.4563,  1.2740,
+         -3.7763, -3.3633],
+        [ 1.3090,  0.1812,  0.4852,  0.1315,  0.5297, -0.3215, -2.0045,  1.0426,
+         -3.2699, -0.5084],
+        [-0.5357, -1.9851, -0.2835, -0.3110,  2.6453,  0.7452, -1.4148,  5.6919,
+         -6.3235, -1.6220]], grad_fn=<AddmmBackward>)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+可以看到，此时有grad_fn=<AddmmBackward>属性，表示，计算的结果在一计算图当中，可以进行梯度反传等操作。但是，两者计算的结果实际上是没有区别的。
