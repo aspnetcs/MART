@@ -1,0 +1,7 @@
+pytorch掉坑记录：model.eval的作用
+https://blog.csdn.net/iammelon/article/details/89928531
+youuuuuziiii 2019-05-07 20:15:32  31378  收藏 34
+分类专栏： pytorch 文章标签： pytorch
+版权
+训练完train_datasets之后，model要来测试样本了。在model(test_datasets)之前，需要加上model.eval(). 否则的话，有输入数据，即使不训练，它也会改变权值。这是model中含有batch normalization层所带来的的性质。
+在做one classification的时候，训练集和测试集的样本分布是不一样的，尤其需要注意这一点。
