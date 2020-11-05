@@ -1,0 +1,177 @@
+https://blog.csdn.net/shanglianlm/article/details/85019633
+PyTorch学习之十种优化函数
+
+mingo_敏 2019-01-01 11:29:08  8432  收藏 45
+分类专栏： pytorch 文章标签： pytorch 优化函数
+版权
+优化函数位于torch.optim包下，
+
+1 使用
+optimizer = optim.SGD(model.parameters(), lr = 0.01, momentum=0.9)
+optimizer = optim.Adam([var1, var2], lr = 0.0001)
+1
+2
+2 基类 Optimizer
+torch.optim.Optimizer(params, defaults)
+
+params (iterable) —— Variable 或者 dict的iterable。指定了什么参数应当被优化。
+defaults —— (dict)：包含了优化选项默认值的字典（一个参数组没有指定的参数选项将会使用默认值）。
+
+方法
+
+load_state_dict(state_dict)：加载optimizer状态。
+state_dict()：以dict返回optimizer的状态。包含两项：state - 一个保存了当前优化状态的dict，param_groups - 一个包含了全部参数组的dict。
+add_param_group(param_group)-给 optimizer 管理的参数组中增加一组参数，可为该组参数定制 lr,momentum, weight_decay 等，在 finetune 中常用。
+step(closure) ：进行单次优化 (参数更新)。
+zero_grad() ：清空所有被优化过的Variable的梯度。
+
+3 算法
+3-1 随机梯度下降算法 SGD算法
+SGD就是每一次迭代计算mini-batch的梯度，然后对参数进行更新，是最常见的优化方法了。即：
+在这里插入图片描述
+其中，η ηη是学习率，g t g_{t}g 
+t
+​	
+ 是梯度
+
+torch.optim.SGD(params, lr=, momentum=0, dampening=0, weight_decay=0, nesterov=False)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float) – 学习率
+momentum (float, 可选) – 动量因子（默认：0）
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认：0）
+dampening (float, 可选) – 动量的抑制因子（默认：0）
+nesterov (bool, 可选) – 使用Nesterov动量（默认：False）
+
+可实现 SGD 优化算法，带动量 SGD 优化算法，带 NAG(Nesterov accelerated
+gradient)动量 SGD 优化算法,并且均可拥有 weight_decay 项。
+
+优缺点：
+SGD完全依赖于当前batch的梯度，所以ηη可理解为允许当前batch的梯度多大程度影响参数更新。对所有的参数更新使用同样的learning rate，选择合适的learning rate比较困难，容易收敛到局部最优。
+
+3-2 平均随机梯度下降算法 ASGD算法
+ASGD 就是用空间换时间的一种 SGD。
+
+torch.optim.ASGD(params, lr=0.01, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认：1e-2）
+lambd (float, 可选) – 衰减项（默认：1e-4）
+alpha (float, 可选) – eta更新的指数（默认：0.75）
+t0 (float, 可选) – 指明在哪一次开始平均化（默认：1e6）
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认: 0）
+
+3-3 Adagrad算法
+AdaGrad算法就是将每一个参数的每一次迭代的梯度取平方累加后在开方，用全局学习率除以这个数，作为学习率的动态更新。
+在这里插入图片描述
+其中，r rr为梯度累积变量，r rr的初始值为0。ε εε为全局学习率，需要自己设置。δ δδ为小常数，为了数值稳定大约设置为1 0 − 7 10^{-7}10 
+−7
+ 。
+
+torch.optim.Adagrad(params, lr=0.01, lr_decay=0, weight_decay=0)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认: 1e-2）
+lr_decay (float, 可选) – 学习率衰减（默认: 0）
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认: 0）
+
+优缺点：
+Adagrad 是一种自适应优化方法，是自适应的为各个参数分配不同的学习率。这个学习率的变化，会受到梯度的大小和迭代次数的影响。梯度越大，学习率越小；梯度越小，学习率越大。缺点是训练后期，学习率过小，因为 Adagrad 累加之前所有的梯度平方作为分母。随着算法不断迭代，r会越来越大，整体的学习率会越来越小。所以，一般来说AdaGrad算法一开始是激励收敛，到了后面就慢慢变成惩罚收敛，速度越来越慢。
+
+3-4 自适应学习率调整 Adadelta算法
+Adadelta是对Adagrad的扩展，但是进行了计算上的简化。
+Adagrad会累加之前所有的梯度平方，而Adadelta只累加固定大小的项，并且也不直接存储这些项，仅仅是近似计算对应的平均值。
+
+torch.optim.Adadelta(params, lr=1.0, rho=0.9, eps=1e-06, weight_decay=0)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+rho (float, 可选) – 用于计算平方梯度的运行平均值的系数（默认：0.9）
+eps (float, 可选) – 为了增加数值计算的稳定性而加到分母里的项（默认：1e-6）
+lr (float, 可选) – 在delta被应用到参数更新之前对它缩放的系数（默认：1.0）
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认: 0）
+
+优缺点：
+Adadelta已经不依赖于全局学习率。训练初中期，加速效果不错，很快，训练后期，反复在局部最小值附近抖动。
+
+3-5 RMSprop算法
+RMSprop 和 Adadelta 一样，也是对 Adagrad 的一种改进。 RMSprop 采用均方根作为分
+母，可缓解 Adagrad 学习率下降较快的问题， 并且引入均方根，可以减少摆动。
+
+torch.optim.RMSprop(params, lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=False)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认：1e-2）
+momentum (float, 可选) – 动量因子（默认：0）
+alpha (float, 可选) – 平滑常数（默认：0.99）
+eps (float, 可选) – 为了增加数值计算的稳定性而加到分母里的项（默认：1e-8）
+centered (bool, 可选) – 如果为True，计算中心化的RMSProp，并且用它的方差预测值对梯度进行归一化
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认: 0）
+
+3-6 自适应矩估计 Adam算法
+在这里插入图片描述
+
+torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认：1e-3）
+betas (Tuple[float, float], 可选) – 用于计算梯度以及梯度平方的运行平均值的系数（默认：0.9，0.999）
+eps (float, 可选) – 为了增加数值计算的稳定性而加到分母里的项（默认：1e-8）
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认: 0）
+
+优缺点：
+Adam的优点主要在于经过偏置校正后，每一次迭代学习率都有个确定范围，使得参数比较平稳。
+Adam结合了Adagrad善于处理稀疏梯度和RMSprop善于处理非平稳目标的优点。
+
+3-7 Adamax算法（Adamd的无穷范数变种）
+Adamax 是对 Adam 增加了一个学习率上限的概念，所以也称之
+为 Adamax。
+
+torch.optim.Adamax(params, lr=0.002, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认：2e-3）
+betas (Tuple[float, float], 可选) – 用于计算梯度以及梯度平方的运行平均值的系数
+eps (float, 可选) – 为了增加数值计算的稳定性而加到分母里的项（默认：1e-8）
+weight_decay (float, 可选) – 权重衰减（L2惩罚）（默认: 0）
+
+优缺点：
+Adamax是Adam的一种变体，此方法对学习率的上限提供了一个更简单的范围。
+Adamax学习率的边界范围更简单。
+
+3-8 SparseAdam算法
+针对稀疏张量的一种“阉割版”Adam 优化方法。
+
+torch.optim.SparseAdam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08)
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认：2e-3）
+betas (Tuple[float, float], 可选) – 用于计算梯度以及梯度平方的运行平均值的系数
+eps (float, 可选) – 为了增加数值计算的稳定性而加到分母里的项（默认：1e-8）
+
+3-9 L-BFGS算法
+L-BFGS 属于拟牛顿算法。 L-BFGS 是对 BFGS 的改进，特点就是节省内存。
+
+torch.optim.LBFGS(params, lr=1, max_iter=20, max_eval=None, tolerance_grad=1e-05, tolerance_change=1e-09, history_size=100, line_search_fn=None)
+1
+lr (float) – 学习率（默认：1）
+max_iter (int) – 每一步优化的最大迭代次数（默认：20）)
+max_eval (int) – 每一步优化的最大函数评价次数（默认：max * 1.25）
+tolerance_grad (float) – 一阶最优的终止容忍度（默认：1e-5）
+tolerance_change (float) – 在函数值/参数变化量上的终止容忍度（默认：1e-9）
+history_size (int) – 更新历史的大小（默认：100）
+
+3-10 弹性反向传播算法 Rprop算法
+该优化方法适用于 full-batch，不适用于 mini-batch。不推荐。
+
+torch.optim.Rprop(params, lr=0.01, etas=(0.5, 1.2), step_sizes=(1e-06, 50))
+1
+params (iterable) – 待优化参数的iterable或者是定义了参数组的dict
+lr (float, 可选) – 学习率（默认：1e-2）
+etas (Tuple[float, float], 可选) – 一对（etaminus，etaplis）, 它们分别是乘法的增加和减小的因子（默认：0.5，1.2）
+step_sizes (Tuple[float, float], 可选) – 允许的一对最小和最大的步长（默认：1e-6，50）
+
+优缺点：
+该优化方法适用于 full-batch，不适用于 mini-batch。不推荐。
+
+参考资料：
+1 【AI初识境】为了围剿SGD大家这些年想过的那十几招(从momentum到Adabound)
