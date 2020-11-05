@@ -1,0 +1,69 @@
+https://blog.csdn.net/tequilaro/article/details/81841748
+PyTorch绘制训练过程的accuracy和loss曲线
+
+tequilaro 2018-08-19 20:57:20  42425  收藏 118
+分类专栏： DeepLearning 文章标签： Pytorch Caffe
+版权
+PyTorch、Caffe绘制训练过程的accuracy和loss曲线
+衡量模型的好坏其实最重要的看的就是准确率与损失率，所以将其进行可视化是一个非常重要的一步。这样就可以直观明了的看出模型训练过程中准确率以及损失率的变化。
+因为博主一直是在caffe和pytorch进行深度学习研究的，之前查了相关资料发现caffe有相关的绘制方法，但是pytorch并没有找到，所以在这里进行总结。
+
+Caffe
+因为之前看到过有相关博主分享过类似的文章，所以直接附链接。
+caffe绘制训练过程的loss和accuracy曲线
+按照博主的分享我将自己的模型的准确率以及损失率进行了绘制，如下图所示
+准确率
+损失率
+
+PyTorch
+我这里主要分享pytorch的绘制方法。
+主要思想就是首先要定义两个数组，然后将每次迭代时模型的准确率和损失率传入到数组中，这里可以利用拼接函数进行拼接。然后在利用绘制图像的函数将其绘制。
+
+#定义两个数组
+Loss_list = []
+Accuracy_list = []
+
+Loss_list.append(train_loss / (len(train_dataset)))
+Accuracy_list.append(100 * train_acc / (len(train_dataset)))
+
+#我这里迭代了200次，所以x的取值范围为(0，200)，然后再将每次相对应的准确率以及损失率附在x上
+x1 = range(0, 200)
+x2 = range(0, 200)
+y1 = Accuracy_list
+y2 = Loss_list
+plt.subplot(2, 1, 1)
+plt.plot(x1, y1, 'o-')
+plt.title('Test accuracy vs. epoches')
+plt.ylabel('Test accuracy')
+plt.subplot(2, 1, 2)
+plt.plot(x2, y2, '.-')
+plt.xlabel('Test loss vs. epoches')
+plt.ylabel('Test loss')
+plt.show()
+plt.savefig("accuracy_loss.jpg")
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+按照我上述的流程最终绘制处理的图片为
+准确率\损失率 
+
+希望我的分享可以对大家后期的学习起到帮助，可以及时的调整参数，得到更好的模型。
