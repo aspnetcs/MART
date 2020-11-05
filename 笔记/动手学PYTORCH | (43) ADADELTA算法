@@ -1,0 +1,72 @@
+https://www.freesion.com/article/2955455301/
+动手学PYTORCH | (43) ADADELTA算法
+标签： 动手学PyTorch  AdaDelta
+
+除了RMSProp算法以外，另⼀个常⽤优化算法AdaDelta算法也针对AdaGrad算法在迭代后期可能较难找到有用解的问题做了改进。有意思的是，AdaDelta算法没有学习率这⼀超参数。
+
+目录
+
+1. 算法
+
+2. 从0开始实现
+
+3. 简洁实现
+
+4. 小结
+
+1. 算法
+AdaDelta算法也像RMSProp算法一样，使⽤了⼩批量随机梯度g_t按元素平方的指数加权移动平均变量s_t.在时间步0，它的所有元素被初始化为0。给定超参数0 \leq \rho <1(对应RMSProp算法中的 \gamma)，在t>0时间步 ，同RMSProp算法一样计算:
+
+
+
+与RMSProp算法不同的是，AdaDelta算法还维护一个额外的状态变量\Delta x_t,其元素同样在时间步0时被初始化为0。我们使⽤ \Delta x_{t-1}来计算自变量的变化量:
+
+
+
+其中\epsilon是为了维持数值稳定性⽽添加的常数，如10^{-5},接着更新自变量(参数):
+
+
+
+最后，我们使⽤\Delta x_t记录⾃变量变化量g'_t按元素平⽅方的指数加权移动平均:
+
+
+
+可以看到，如不考虑\epsilon的影响，AdaDelta算法跟RMSProp算法的不同之处在于使⽤\sqrt{\Delta x_{t-1}}来替代学 习率\eta.
+
+ 
+
+2. 从0开始实现
+AdaDelta算法需要对每个⾃变量（参数）维护两个状态变量，即\Delta x_t和s_t.我们按AdaDelta算法中的公式实现该算法。
+
+%matplotlib inline
+import torch
+import sys
+sys.path.append(".") 
+import d2lzh_pytorch as d2l
+ 
+features, labels = d2l.get_data_ch7()
+def init_adadelta_states():
+    s_w, s_b = torch.zeros((features.shape[1], 1), dtype=torch.float32), torch.zeros(1, dtype=torch.float32)
+    delta_w, delta_b = torch.zeros((features.shape[1], 1), dtype=torch.float32), torch.zeros(1, dtype=torch.float32)
+    return ((s_w, delta_w), (s_b, delta_b))
+ 
+def adadelta(params, states, hyperparams):
+    rho, eps = hyperparams['rho'], 1e-5
+    for p, (s, delta) in zip(params, states):
+        s[:] = rho * s + (1 - rho) * (p.grad.data**2)
+        g =  p.grad.data * torch.sqrt((delta + eps) / (s + eps))
+        p.data -= g
+        delta[:] = rho * delta + (1 - rho) * g * g
+使⽤超参数\rho = 0.9来训练模型。
+
+d2l.train_ch7(adadelta, init_adadelta_states(), {'rho': 0.9}, features, labels)
+
+
+3. 简洁实现
+通过名称为Adadelta的优化器方法，我们便可使用PyTorch提供的AdaDelta算法。它的超参数可以通过rho指定：
+
+d2l.train_pytorch_ch7(torch.optim.Adadelta, {'rho': 0.9}, features, labels)
+
+
+4. 小结
+AdaDelta算法没有学习率超参数，它通过使用有关⾃变量（参数）更新量平方的指数加权移动平均的项来替代RMSProp算法中的学习率。
