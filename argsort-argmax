@@ -1,0 +1,22 @@
+argsort argmax
+argsort是将array排序并返回坐标值，默认是从小到大，添加负号-变成从大到小。这个函数并不改变原来的array。
+
+复制代码
+>>> a = np.array([1,5,3,1])
+>>> np.argsort(a)
+array([0, 3, 2, 1])
+>>> np.argsort(-a)
+array([1, 2, 0, 3])
+>>> a
+array([1, 5, 3, 1])
+复制代码
+argmax是返回array中最大值的坐标
+
+>>> a = np.array([1,3,5])
+>>> np.argmax(a)
+2
+ 
+
+貌似arg都是返回坐标
+
+分类: numpy
