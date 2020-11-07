@@ -1,0 +1,51 @@
+https://blog.csdn.net/qq_41776781/article/details/93967961
+pytorch入门之第一章Variable的理解
+
+YYLin-AI 2019-06-28 10:22:56  8473  收藏 23
+分类专栏： pytorch基本教程 文章标签： pytorch variable 变量
+版权
+仅仅是简单的记录一下自己学习pytorch的过程，刚刚学习难免理解不够，仅供参考而已。本节主要介绍一下我对pytorch中的变量
+
+(variable)的理解， pytorch中的变量有三个属性，分别是data表示变量中的具体值， grad表示这个变量反向传播的梯度，这个的计算方式下面有专门的一个演示程序， grad_fn表示是通过什么操作得到这个变量的例如( 加减乘除、卷积、反置卷积)
+
+
+
+ 
+
+ 
+
+首先是引入相关的数据包
+
+# 首先是引入pytorch相关的数据包
+import torch
+from torch.autograd import Variable
+ 
+
+然后定义一个tensor(张量)，以及将tensor(张量)转化成variable(变量)。之所以需要将tensor转化成variable是因为pytorch中tensor(张量)只能放在CPU上运算，而(variable)变量是可以只用GPU进行加速计算的。 所以说这就是为什么pytorch加载图像的时候一般都会使用(variable)变量.  下面一段代码演示的是tensor和variable(变量)之间的转化。
+
+# 然后定义pytorch中的tensor 并将tensor转化成Variable的形式
+x_tensor = torch.ones(3)
+print('张量的类型以及具体值:\n', type(x_tensor), x_tensor)
+x_var = Variable(x_tensor, requires_grad = True)
+print('变量的类型以及具体的值:\n', type(x_var), x_var)
+ 
+
+神经网络使用BP算法更新网络中的参数，下面就通过一个简单的例子介绍一下pytorch中如何求导的。
+
+实验代码： 我们可以发现我们在求y的grad_fn的时候，其是通过add操作得到的，因为x_var是定义得到的，所以其显示None,
+
+求x_var的梯度(grad)时，其y对x_var求导得到的。
+
+# 显示的调用pytorch中的反向传播
+y = x_var*x_var + 2
+print(y, '\n', y.grad_fn)
+ 
+y.backward(torch.FloatTensor([1, 1, 1]))
+print(x_var.grad, '\n', x_var.grad_fn)
+ 
+
+实验结果：
+
+
+
+ 
